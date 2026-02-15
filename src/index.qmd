@@ -1,0 +1,27 @@
+---
+date: last-modified
+date-format: long
+published-title: "Last updated"
+
+abstract: "New chapters will be posted as they are finished. <br> This work is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en)."
+abstract-title: "Version & License"
+
+page-footer: false
+
+format:
+  html:
+    toc: false
+    include-in-header:
+      - text: |
+          <style type="text/css">
+          h1.hide {
+            display: none;
+          }
+          </style>
+---
+
+# Preface {.hide .unnumbered .unlisted}
+
+<br />
+
+<img src="images/cover.png" width="200">

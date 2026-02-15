@@ -1,0 +1,511 @@
+# Into the Depths of Attention
+
+## Attention Step by Step
+
+In Chapter 2, we built the intuition behind attention. Now let's walk through the actual computation, step by step, with real numbers.
+
+Here's the overall flow of self-attention:
+
+```{mermaid}
+---
+config:
+  layout: elk
+  themeVariables:
+    fontFamily: "monospace"
+---
+flowchart BT
+    X("Input Matrix (X)")
+    QKV[["Compute Q , K , V"]]
+    Scores[["Compute Relevance<br>(Q × Kᵀ)"]]
+    Softmax[["Scale and Softmax"]]
+    Mix[["'Mix' Information<br>(A × V)"]]
+    Z("Contextual Representations (Z)")
+    
+    X --> QKV --> Scores --> Softmax --> Mix --> Z
+    
+    style QKV fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style Scores fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style Softmax fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style Mix fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style X fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style Z fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+
+```
+
+We'll work through a complete example with real numbers.
+
+**Sentence:** `"the ring fell"`
+
+**Tokens:** `["the", "ring", "fell"]`, so $N = 3$
+
+**Dimensions:** $d_k = d_v = 4$
+
+### Step 1: Start with Embeddings ($X$)
+
+From Chapter 1, each token has an embedding. Stack them into a matrix:
+
+$$
+X = \begin{bmatrix} 0.1 & 0.2 & 0.3 & 0.4 \\ 0.5 & 0.6 & 0.7 & 0.8 \\ 0.2 & 0.4 & 0.6 & 0.8 \end{bmatrix} \begin{matrix} \leftarrow \text{``the"} \\ \leftarrow \text{``ring"} \\ \leftarrow \text{``fell"} \end{matrix}
+$$
+
+### Step 2: Compute $Q$, $K$, $V$
+
+We didn't explain how a trained transformer derive the $Q$, $K$, and $V$ from the input, but it's straightforward. They're computed by multiplying $X$ by the transformer's **learned weight matrices** (Shape: $d_{model} \times d_k$):
+
+$$
+Q = XW^Q, \quad K = XW^K, \quad V = XW^V
+$$
+
+where:
+
+- $W^Q$ — describes "how tokens express requirements"
+- $W^K$ — describes "how tokens express offerings"
+- $W^V$ — describes "what information tokens carry"
+
+For our example with $d_{model}=d_k=d_v=4$, assume training has learned these weight matrices:
+
+$$
+W^Q = \begin{bmatrix} 2 & 0 & 0 & 0 \\ 0 & 1 & 1 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}, \quad
+W^K = \begin{bmatrix} 2 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 0 \end{bmatrix}, \quad
+W^V = \begin{bmatrix} 1 & 1 & 0 & 0 \\ 0 & 0 & 2 & 2 \\ 3 & 0 & 0 & 3 \\ 0 & 0 & 0 & 0 \end{bmatrix}
+$$
+
+Then compute $Q = XW^Q, \quad K = XW^K, \quad V = XW^V$:
+
+$$
+Q = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 1 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix}, \quad K = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 1 & 1 & 0 \end{bmatrix}, \quad V = \begin{bmatrix} 1 & 1 & 0 & 0 \\ 0 & 0 & 2 & 2 \\ 3 & 0 & 0 & 3 \end{bmatrix}
+$$
+
+> **The `ring` example**: Did you notice that the Query for `ring` (row 2 of Q $=[0, 1, 1, 0]$) and the Key for `fell` (row 3 of K $=[0, 1, 1, 0]$) are identical—This means what `fell` offers is exactly what `ring` requires! 
+
+::: {.callout-note collapse="true"}
+### Context Specificity comes from $X$
+Note that these $W$ matrices are not context-specific: they describe the **general linguistic patterns** learned from the training data. What makes $Q$, $K$, and $V$ context-specific is the input $X$ (all the input tokens, i.e. "the context").
+:::
+
+::: {.callout-note collapse="true"}
+### Does $V$ have to be context-specific?
+No. Indeed, in the simplest implementation, the information that a token carries is simply the token's embedding in $X$, i.e. $V = X$.
+In practice, we often learn a separate $W^V$ to transform the information carried by each token, as this gives the model more flexibility.
+:::
+
+### Step 3: Compute Raw Scores ($S = QK^\top$)
+
+To quantify the relevance, we compute the dot product between every Query and every Key:
+
+
+$$
+S = QK^\top = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 1 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix} \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 1 \\ 0 & 0 & 1 \\ 0 & 0 & 0 \end{bmatrix} = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 2 \\ 0 & 1 & 1 \end{bmatrix}
+$$
+
+> **The `ring` example**: `ring` scores highest with `fell` (2^nd^ row 3^rd^ column of $S=2$)—exactly what we wanted.
+
+### Step 4: Scale by $\sqrt{d_k}$
+
+When $d_k$ is large, dot products can become very large numbers (summing more numbers). Large numbers going into softmax create extreme distributions (almost all weight on one token), which harms learning.
+
+**Solution:** Divide by $\sqrt{d_k}$ to keep scores in a reasonable range.
+
+$$
+\tilde{S} = \frac{S}{\sqrt{d_k}} = \frac{S}{2} = \begin{bmatrix} 0.5 & 0 & 0 \\ 0 & 0.5 & 1.0 \\ 0 & 0.5 & 0.5 \end{bmatrix}
+$$
+
+
+::: {.callout-note collapse="true"}
+### Why $\sqrt{d_k}$ Specifically?
+If entries of Q and K are roughly standard normal (mean 0, variance 1), then the dot product of two $d_k$-dimensional vectors has variance approximately $d_k$. Dividing by $\sqrt{d_k}$ brings the variance back to approximately 1.
+:::
+
+### Step 5: Softmax (Convert to Probabilities)
+
+We want each row to be a probability distribution where all values lie between 0 and 1, and each row sums to 1 (like percentages). **Softmax** does exactly this:
+
+$$
+A_{ij} = \frac{\exp(\tilde{S}_{ij})}{\sum_{j'} \exp(\tilde{S}_{ij'})}
+$$
+
+$$
+A \approx \begin{bmatrix} 0.45 & 0.27 & 0.27 \\ \mathbf{0.19} & \mathbf{0.31} & \mathbf{0.51} \\ 0.23 & 0.38 & 0.38 \end{bmatrix}
+$$
+
+> **The `ring` example**: "ring" *attends* 51% to "fell," 31% to itself, and 19% to "the."
+
+### Step 6: "Mix" Information
+
+Now we mix the information—retrieving and aggregating information from $V$, weighted by the attention matrix $A$:
+
+$$
+Z = A \cdot V
+$$
+
+$$
+= \begin{bmatrix} 
+0.45 & 0.27 & 0.27 \\ 
+0.19 & 0.31 & 0.51 \\ 
+0.23 & 0.38 & 0.38 
+\end{bmatrix}  \begin{bmatrix} 
+1 & 1 & 0 & 0 \\ 
+0 & 0 & 2 & 2 \\ 
+3 & 0 & 0 & 3 
+\end{bmatrix} = \begin{bmatrix}
+1.26 & 0.45 & 0.54 & 1.35 \\
+\mathbf{1.72} & \mathbf{0.19} & \mathbf{0.62} & \mathbf{2.15} \\
+1.37 & 0.23 & 0.76 & 1.90
+\end{bmatrix}
+$$
+
+> **The `ring` example**: Row 2 (bolded) is the *contextualized* representation of `ring`.
+
+### What Changed after Attention?
+
+| | Dim 1 | Dim 2 | Dim 3 | Dim 4 |
+|--------|-------|-------|-------|-------|
+| Original $v_{\text{ring}}$ | 0 | 0 | 2 | 2 |
+| Contextualized $z_{\text{ring}}$ | **1.72** | 0.19 | 0.62 | **2.15** |
+
+$v_{\text{ring}}$'s dimensions 1 and 4 (where "fell" was strong) increased dramatically—$z_{\text{ring}}$ now carries information from "fell."
+
+### The One Formula to Bind Them All
+
+We can write everything in one line:
+
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right) V
+$$
+
+
+where $Q = XW^Q$, $K = XW^K$, $V = XW^V$.
+
+Here is a simplified computational graph showing how variables are connected.
+
+```{mermaid}
+---
+config:
+  themeVariables:
+    fontFamily: "monospace"
+---
+flowchart LR
+    X("X")
+    
+    subgraph Weights
+        direction TB
+        WQ("W<sup>Q</sup>")
+        WK("W<sup>K</sup>")
+        WV("W<sup>V</sup>")
+    end
+
+    Q(Q)
+    K(K)
+    V(V)
+    A(A)
+    KT("Kᵀ")
+    S("S")
+    A("A")
+    Z("Z")
+
+    X --- WQ & WK & WV
+    WQ --> Q
+    WK --> K
+    WV --> V
+
+    Q --> S
+    K --> KT --> S
+    S -->|"scale &<br>softmax"| A
+    A --> Z
+    V --> Z
+
+    style X fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style Z fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style WQ fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style WK fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style WV fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style Q fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style K fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style KT fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style V fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style S fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style A fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+```
+
+## The Encoder Block
+
+Self-attention is the core of the transformer, but it doesn't work alone. An **Encoder Block** wraps attention with additional components that stabilize training and enrich representations.
+
+| Component | Purpose |
+|-----------|---------|
+| **Multi-Head Attention** | Lets tokens look at each other and gather context |
+| **Add & Norm** | Stabilizes training and preserves original information |
+| **Feed-Forward Network** | Processes the gathered context within each token |
+
+Let's build up to this step by step.
+
+## Multi-Head Attention
+
+Consider the word `ring` in our running example: `"the ring fell"`.
+
+The token `ring` might need to attend to:
+- `fell` for *semantic role* (what happened to the ring?)
+- `the` for *grammatical context* (is this a definite reference?)
+
+A single attention head must average these competing needs. **Multi-head attention** runs multiple attention operations in parallel, letting each head specialize in a different type of relationship.
+
+### Parameters
+
+| Symbol | Name | Value |
+|--------|------|-------|
+| $d_{model}$ | Model dimension | 4 |
+| $h$ | Number of heads | 2 |
+| $d_k$ | Dimension per head | $d_{model} / h = 2$ |
+
+### Step 1: Compute Q, K, V
+
+We multiply $X$ by the transformer's learned weight matrices to get full-size matrices ($3 \times 4$):
+
+$$
+Q = XW^Q, \quad K = XW^K, \quad V = XW^V
+$$
+
+For our example, assume training has learned:
+
+$$
+Q = \begin{bmatrix}
+1 & 0 & 0 & 1 \\
+0 & 1 & 1 & 0 \\
+1 & 0 & 1 & 0
+\end{bmatrix}, \quad
+K = \begin{bmatrix}
+1 & 0 & 0 & 1 \\
+1 & 0 & 1 & 0 \\
+0 & 1 & 0 & 1
+\end{bmatrix}, \quad
+V = \begin{bmatrix}
+1 & 1 & 0 & 0 \\
+2 & 2 & 0 & 0 \\
+0 & 0 & 3 & 3
+\end{bmatrix}
+$$
+
+::: {.callout-note collapse="true"}
+### Two Equivalent Views
+
+**View 1: Project, then split** (common in code)
+- First compute full $Q = XW^Q_{full}$ (shape $3 \times 4$)
+- Then split into $Q_1, Q_2$ along the feature dimension
+
+**View 2: Split projections** (more intuitive)
+- Learn separate $W^{Q_1}, W^{Q_2}$ (each $4 \times 2$)
+- Compute $Q_1 = XW^{Q_1}$ and $Q_2 = XW^{Q_2}$ directly
+
+Both produce the same result. In this chapter, we show the full matrices first to emphasize that all heads share the same input context.
+:::
+
+### Step 2: Split into Heads
+
+We split each matrix along the feature dimension into $h = 2$ heads:
+
+**Head 1** (columns 1–2):
+$$
+Q_1 = \begin{bmatrix} 1 & 0 \\ 0 & 1 \\ 1 & 0 \end{bmatrix}, \quad
+K_1 = \begin{bmatrix} 1 & 0 \\ 1 & 0 \\ 0 & 1 \end{bmatrix}, \quad
+V_1 = \begin{bmatrix} 1 & 1 \\ 2 & 2 \\ 0 & 0 \end{bmatrix}
+$$
+
+**Head 2** (columns 3–4):
+$$
+Q_2 = \begin{bmatrix} 0 & 1 \\ 1 & 0 \\ 1 & 0 \end{bmatrix}, \quad
+K_2 = \begin{bmatrix} 0 & 1 \\ 1 & 0 \\ 0 & 1 \end{bmatrix}, \quad
+V_2 = \begin{bmatrix} 0 & 0 \\ 0 & 0 \\ 3 & 3 \end{bmatrix}
+$$
+
+### Step 3: Parallel Attention
+
+Each head performs the full attention computation independently:
+
+**Head 1** (captures semantic role: `ring` ↔ `fell`):
+$$Z_1 = \text{Attention}(Q_1, K_1, V_1) = \begin{bmatrix} 1.5 & 1.5 \\ 1.8 & 1.8 \\ \mathbf{1.6} & \mathbf{1.6} \end{bmatrix}$$
+
+**Head 2** (captures grammatical context: `ring` ↔ `the`):
+$$Z_2 = \text{Attention}(Q_2, K_2, V_2) = \begin{bmatrix} 1.0 & 1.0 \\ 1.2 & 1.2 \\ \mathbf{2.4} & \mathbf{2.4} \end{bmatrix}$$
+
+### Step 4: Concatenate
+
+We glue the head outputs back together along the feature dimension:
+
+$$
+Z_{ring} = \begin{bmatrix}
+1.5 & 1.5 & 1.0 & 1.0 \\
+1.8 & 1.8 & 1.2 & 1.2 \\
+1.6 & 1.6 & 2.4 & 2.4
+\end{bmatrix}
+$$
+
+Shape is restored to $3 \times 4$.
+
+### Step 5: Synthesize Insights
+
+We multiply by $W^O$ ($4 \times 4$) to mix information across heads:
+
+$$Z_{final} = Z_{ring} \times W^O$$
+
+::: {.callout-note collapse="true"}
+### Why output projection?
+After concatenation, information is segregated (columns 1–2 from Head 1, columns 3–4 from Head 2). The output projection $W^O$ lets the model combine insights—e.g., "Head 1 found the semantic patient, Head 2 found the definite article"—into a unified representation.
+:::
+
+```{mermaid}
+---
+config:
+  themeVariables:
+    fontFamily: "monospace"
+---
+flowchart BT
+    X("X (N × d<sub>model</sub>)") --> Proj[["Compute Q, K, V"]]
+    Proj --> Split[["Split into Heads"]]
+    Split --> H1[["Head 1:<br>Attention"]]
+    Split --> H2[["Head 2:<br>Attention"]]
+    H1 --> Concat[["Concatenate"]]
+    H2 --> Concat
+    Concat --> WO[["Synthesize Insights<br>(Z<sub>final</sub> = Z · W<sup>O</sup>)"]]
+    WO --> Z("Z<sub>final</sub> (N × d<sub>model</sub>)")
+
+    style X fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style Z fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style H1 fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style H2 fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style Proj fill:#f4f4f4,stroke:#333
+    style Split fill:#f4f4f4,stroke:#333
+    style Concat fill:#f4f4f4,stroke:#333
+    style WO fill:#f4f4f4,stroke:#333
+```
+
+## Completing the Block: Residuals, Norm, and FFN
+
+Multi-Head Attention produces a contextualized matrix $Z_{final}$, but we need a few more components to form a complete Encoder Block.
+
+```{mermaid}
+---
+config:
+  layout: elk
+  themeVariables:
+    fontFamily: "monospace"
+---
+flowchart BT
+    X("X<sub>Input</sub> (N x d<sub>model</sub>)")
+    MHA[["Multi-Head Attention"]]  
+    LN1[["Add & Norm"]]
+    FFN[["Feed-Forward Network"]]
+    LN2[["Add & Norm"]]
+    Out("X<sub>Output</sub> (N x d<sub>model</sub>)")
+
+    X --> MHA --> LN1 --> FFN --> LN2 --> Out
+    X -- Copy --> LN1
+    LN1 -- Copy --> LN2
+
+    style X fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style Out fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style MHA fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style FFN fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style LN1 fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    style LN2 fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+```
+
+### Residual Connection (Add)
+
+We add the original input $X$ to the attention output $Z_{final}$:
+
+$$X_{mid} = X + Z_{final}$$
+
+For our "ring" token, if row 2 of $Z_{final}$ is $[1.6, 1.6, 2.4, 2.4]$ and row 2 of $X$ is $[0.5, 0.6, 0.7, 0.8]$, then:
+
+$$x_{\text{ring,mid}} = [2.1, 2.2, 3.1, 3.2]$$
+
+This preserves the original token information while blending in context, creating a gradient highway for deep networks.
+
+### Layer Normalization
+
+Each row (token) is normalized independently to have mean 0 and variance 1:
+
+$$\text{LayerNorm}(x) = \gamma \frac{x - \mu}{\sigma} + \beta$$
+
+For $x_{\text{ring,mid}} = [2.1, 2.2, 3.1, 3.2]$:
+- $\mu = 2.65$, $\sigma \approx 0.48$
+- Normalized: $[-1.15, -0.94, 0.94, 1.15]$
+- Scaled/shifted: $z_{\text{ring}} = [1.2, 1.4, 2.6, 2.8]$ (using learned $\gamma, \beta$)
+
+### Feed-Forward Network (FFN)
+
+Each token passes through a position-wise MLP. For our normalized "ring" token:
+
+$$\text{FFN}(z_{\text{ring}}) = \text{ReLU}(z_{\text{ring}} W_1 + b_1)W_2 + b_2$$
+
+Example with $d_{ff} = 4$:
+
+- **Input**: $z_{\text{ring}} = [1.2, 1.4, 2.6, 2.8]$ (contains motion from `fell`)
+- **$W_1$** might learn: "If dimension 3 is high, activate a 'motion' neuron"
+- **ReLU**: $\text{ReLU}([...])$ keeps only positive activations
+- **$W_2$** combines: Motion neuron + Original features → Richer representation
+
+Result: $z_{\text{ring,final}} = [1.5, 1.3, 0.9, 2.9]$—now explicitly encoding "falling ring" semantics.
+
+::: {.callout-note collapse="true"}
+### Why FFN?
+Attention mixes context *between* tokens. The FFN processes this mixture *within* each token, enabling non-linear refinement that attention alone cannot perform.
+:::
+
+### Another Residual + Norm
+
+We repeat the pattern:
+
+$$X_{output} = \text{LayerNorm}(X_{mid} + \text{FFN}(X_{mid}))$$
+
+The final output maintains the same $3 \times 4$ shape as the input, ready for the next Encoder Block. Stacking 12–96 such blocks builds progressively deeper understanding.
+
+## Summary
+
+### Key Symbols
+
+| Symbol | Name | Example | Description |
+|--------|------|---------|-------------|
+| $N$ | Sequence length | 3 | Number of tokens |
+| $d_{model}$ | Model dimension | 4 | Features per token |
+| $h$ | Number of heads | 2 | Parallel attention operations |
+| $d_k$ | Head dimension | 2 | $d_{model} / h$ |
+| $W^Q, W^K, W^V$ | Projection matrices | $4 \times 4$ | Transform $X$ into $Q$, $K$, $V$ |
+| $W^O$ | Output projection | $4 \times 4$ | Combines head outputs |
+| $A$ | Attention matrix | $3 \times 3$ | Who attends to whom |
+| $Z$ | Output matrix | $3 \times 4$ | Contextualized representations |
+
+### What Self-Attention Computes
+
+1. **Relevance scores** between every pair of tokens (via $Q \cdot K$ dot products)
+2. **Normalized weights** (via scaling and softmax) forming the attention matrix $A$
+3. **New representations** (via weighted sum of $V$) that blend information from relevant tokens
+
+### The Formula
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right) V
+$$
+
+### Key Shapes
+
+| Symbol | Meaning | Shape |
+|--------|---------|-------|
+| $X$ | Input token embeddings | $N \times d_{model}$ |
+| $W^Q, W^K$ | Query/Key projections | $d_{model} \times d_k$ |
+| $W^V$ | Value projection | $d_{model} \times d_v$ |
+| $Q, K$ | Queries and Keys | $N \times d_k$ |
+| $V$ | Values | $N \times d_v$ |
+| $A$ | Attention matrix | $N \times N$ |
+| $Z$ | Output representations | $N \times d_v$ |
+
+### What Comes Next
+
+We've built the complete Encoder Block. But we haven't talked about:
+
+- **How the model learns** the weight matrices $W^Q$, $W^K$, $W^V$
+- **Pretraining objectives** that teach the model language patterns
+- **Decoder blocks** and how they differ from encoders
+
+These are the stories for the next chapter.
