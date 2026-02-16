@@ -20,9 +20,7 @@ format:
           </style>
 ---
 
-# Welcome {.hide .unnumbered .unlisted}
-
-<br />
+# Front Matter {.hide .unnumbered .unlisted}
 
 <img src="images/cover.png" width="200">
 
