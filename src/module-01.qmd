@@ -212,6 +212,7 @@ We have converted text into a numerical matrix $X$ of shape $(N \times d_{model}
 ```{mermaid}
 ---
 config:
+  layout: elk
   themeVariables:
     fontFamily: "monospace"
   flowchart:
