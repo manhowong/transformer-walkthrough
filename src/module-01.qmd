@@ -212,7 +212,6 @@ We have converted text into a numerical matrix $X$ of shape $(N \times d_{model}
 ```{mermaid}
 ---
 config:
-  layout: elk
   themeVariables:
     fontFamily: "monospace"
   flowchart:
@@ -233,10 +232,9 @@ flowchart BT
     J("Matrix X<br>(3 × d<sub>model</sub>)")
 
     A --> B --> C --> D --> E --> I
-    C ~~~ Dummy[ ] ~~~ D 
     F --> G --> H --> I
     I --> J
-    C -..- F
+    C -.Positions in list..- F
     
     style A fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
     style J fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
@@ -250,8 +248,6 @@ flowchart BT
     style E fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style F fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style H fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
-    
-    style Dummy fill:transparent,stroke:transparent
 
 ```
 
