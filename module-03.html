@@ -558,6 +558,10 @@ Z = A \cdot V
 config:
   themeVariables:
     fontFamily: "monospace"
+  flowchart:
+    nodeSpacing: 35
+    rankSpacing: 30
+    padding: 10
 ---
 flowchart LR
     X("X")
@@ -585,7 +589,7 @@ flowchart LR
 
     Q --&gt; S
     K --&gt; KT --&gt; S
-    S --&gt;|"scale &amp;&lt;br&gt;softmax"| A
+    S ---&gt;|"scale &amp;&lt;br&gt;softmax"| A
     A --&gt; Z
     V --&gt; Z
 
