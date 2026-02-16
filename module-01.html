@@ -574,7 +574,6 @@ frequently co-occurs with words like X, Y, Z...</code></pre>
 <div>
 <pre class="mermaid mermaid-js">---
 config:
-  layout: elk
   themeVariables:
     fontFamily: "monospace"
   flowchart:
@@ -595,10 +594,9 @@ flowchart BT
     J("Matrix X&lt;br&gt;(3 × d&lt;sub&gt;model&lt;/sub&gt;)")
 
     A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; I
-    C ~~~ Dummy[ ] ~~~ D 
     F --&gt; G --&gt; H --&gt; I
     I --&gt; J
-    C -..- F
+    C -.Positions in list..- F
     
     style A fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
     style J fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
@@ -612,8 +610,6 @@ flowchart BT
     style E fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style F fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style H fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
-    
-    style Dummy fill:transparent,stroke:transparent
 
 </pre>
 </div>
