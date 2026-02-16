@@ -300,11 +300,10 @@ window.Quarto = {
   </ul></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">3.5</span> Summary</a>
   <ul class="collapse">
-  <li><a href="#key-symbols" id="toc-key-symbols" class="nav-link" data-scroll-target="#key-symbols"><span class="header-section-number">3.5.1</span> Key Symbols</a></li>
-  <li><a href="#what-self-attention-computes" id="toc-what-self-attention-computes" class="nav-link" data-scroll-target="#what-self-attention-computes"><span class="header-section-number">3.5.2</span> What Self-Attention Computes</a></li>
-  <li><a href="#the-formula" id="toc-the-formula" class="nav-link" data-scroll-target="#the-formula"><span class="header-section-number">3.5.3</span> The Formula</a></li>
-  <li><a href="#key-shapes" id="toc-key-shapes" class="nav-link" data-scroll-target="#key-shapes"><span class="header-section-number">3.5.4</span> Key Shapes</a></li>
-  <li><a href="#what-comes-next" id="toc-what-comes-next" class="nav-link" data-scroll-target="#what-comes-next"><span class="header-section-number">3.5.5</span> What Comes Next</a></li>
+  <li><a href="#what-self-attention-computes" id="toc-what-self-attention-computes" class="nav-link" data-scroll-target="#what-self-attention-computes"><span class="header-section-number">3.5.1</span> What Self-Attention Computes</a></li>
+  <li><a href="#the-formula" id="toc-the-formula" class="nav-link" data-scroll-target="#the-formula"><span class="header-section-number">3.5.2</span> The Formula</a></li>
+  <li><a href="#key-symbols" id="toc-key-symbols" class="nav-link" data-scroll-target="#key-symbols"><span class="header-section-number">3.5.3</span> Key Symbols</a></li>
+  <li><a href="#what-comes-next" id="toc-what-comes-next" class="nav-link" data-scroll-target="#what-comes-next"><span class="header-section-number">3.5.4</span> What Comes Next</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -858,7 +857,12 @@ flowchart BT
 <h3 data-number="3.4.2" class="anchored" data-anchor-id="layer-normalization"><span class="header-section-number">3.4.2</span> Layer Normalization</h3>
 <p>Each row (token) is normalized independently to have mean 0 and variance 1:</p>
 <p><span class="math display">\[\text{LayerNorm}(x) = \gamma \frac{x - \mu}{\sigma} + \beta\]</span></p>
-<p>For <span class="math inline">\(x_{\text{ring,mid}} = [2.1, 2.2, 3.1, 3.2]\)</span>: - <span class="math inline">\(\mu = 2.65\)</span>, <span class="math inline">\(\sigma \approx 0.48\)</span> - Normalized: <span class="math inline">\([-1.15, -0.94, 0.94, 1.15]\)</span> - Scaled/shifted: <span class="math inline">\(z_{\text{ring}} = [1.2, 1.4, 2.6, 2.8]\)</span> (using learned <span class="math inline">\(\gamma, \beta\)</span>)</p>
+<p>For <span class="math inline">\(x_{\text{ring,mid}} = [2.1, 2.2, 3.1, 3.2]\)</span>:</p>
+<ul>
+<li><span class="math inline">\(\mu = 2.65\)</span>, <span class="math inline">\(\sigma \approx 0.48\)</span></li>
+<li>Normalized: <span class="math inline">\([-1.15, -0.94, 0.94, 1.15]\)</span></li>
+<li>Scaled/shifted: <span class="math inline">\(z_{\text{ring}} = [1.2, 1.4, 2.6, 2.8]\)</span> (using learned <span class="math inline">\(\gamma, \beta\)</span>)</li>
+</ul>
 </section>
 <section id="feed-forward-network-ffn" class="level3" data-number="3.4.3">
 <h3 data-number="3.4.3" class="anchored" data-anchor-id="feed-forward-network-ffn"><span class="header-section-number">3.4.3</span> Feed-Forward Network (FFN)</h3>
@@ -898,91 +902,22 @@ flowchart BT
 </section>
 <section id="summary" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="summary"><span class="header-section-number">3.5</span> Summary</h2>
-<section id="key-symbols" class="level3" data-number="3.5.1">
-<h3 data-number="3.5.1" class="anchored" data-anchor-id="key-symbols"><span class="header-section-number">3.5.1</span> Key Symbols</h3>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 22%">
-<col style="width: 16%">
-<col style="width: 25%">
-<col style="width: 36%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Symbol</th>
-<th>Name</th>
-<th>Example</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><span class="math inline">\(N\)</span></td>
-<td>Sequence length</td>
-<td>3</td>
-<td>Number of tokens</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(d_{model}\)</span></td>
-<td>Model dimension</td>
-<td>4</td>
-<td>Features per token</td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(h\)</span></td>
-<td>Number of heads</td>
-<td>2</td>
-<td>Parallel attention operations</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(d_k\)</span></td>
-<td>Head dimension</td>
-<td>2</td>
-<td><span class="math inline">\(d_{model} / h\)</span></td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(W^Q, W^K, W^V\)</span></td>
-<td>Projection matrices</td>
-<td><span class="math inline">\(4 \times 4\)</span></td>
-<td>Transform <span class="math inline">\(X\)</span> into <span class="math inline">\(Q\)</span>, <span class="math inline">\(K\)</span>, <span class="math inline">\(V\)</span></td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(W^O\)</span></td>
-<td>Output projection</td>
-<td><span class="math inline">\(4 \times 4\)</span></td>
-<td>Combines head outputs</td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(A\)</span></td>
-<td>Attention matrix</td>
-<td><span class="math inline">\(3 \times 3\)</span></td>
-<td>Who attends to whom</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(Z\)</span></td>
-<td>Output matrix</td>
-<td><span class="math inline">\(3 \times 4\)</span></td>
-<td>Contextualized representations</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="what-self-attention-computes" class="level3" data-number="3.5.2">
-<h3 data-number="3.5.2" class="anchored" data-anchor-id="what-self-attention-computes"><span class="header-section-number">3.5.2</span> What Self-Attention Computes</h3>
+<section id="what-self-attention-computes" class="level3" data-number="3.5.1">
+<h3 data-number="3.5.1" class="anchored" data-anchor-id="what-self-attention-computes"><span class="header-section-number">3.5.1</span> What Self-Attention Computes</h3>
 <ol type="1">
 <li><strong>Relevance scores</strong> between every pair of tokens (via <span class="math inline">\(Q \cdot K\)</span> dot products)</li>
 <li><strong>Normalized weights</strong> (via scaling and softmax) forming the attention matrix <span class="math inline">\(A\)</span></li>
 <li><strong>New representations</strong> (via weighted sum of <span class="math inline">\(V\)</span>) that blend information from relevant tokens</li>
 </ol>
 </section>
-<section id="the-formula" class="level3" data-number="3.5.3">
-<h3 data-number="3.5.3" class="anchored" data-anchor-id="the-formula"><span class="header-section-number">3.5.3</span> The Formula</h3>
+<section id="the-formula" class="level3" data-number="3.5.2">
+<h3 data-number="3.5.2" class="anchored" data-anchor-id="the-formula"><span class="header-section-number">3.5.2</span> The Formula</h3>
 <p><span class="math display">\[
 \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right) V
 \]</span></p>
 </section>
-<section id="key-shapes" class="level3" data-number="3.5.4">
-<h3 data-number="3.5.4" class="anchored" data-anchor-id="key-shapes"><span class="header-section-number">3.5.4</span> Key Shapes</h3>
+<section id="key-symbols" class="level3" data-number="3.5.3">
+<h3 data-number="3.5.3" class="anchored" data-anchor-id="key-symbols"><span class="header-section-number">3.5.3</span> Key Symbols</h3>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -992,6 +927,26 @@ flowchart BT
 </tr>
 </thead>
 <tbody>
+<tr class="odd">
+<td><span class="math inline">\(N\)</span></td>
+<td>Sequence length</td>
+<td>Scalar</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(d_{model}\)</span></td>
+<td>Model dimension</td>
+<td>Scalar</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(h\)</span></td>
+<td>Number of heads</td>
+<td>Scalar</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(d_k\)</span></td>
+<td>Head dimension</td>
+<td><span class="math inline">\(d_{model} / h\)</span></td>
+</tr>
 <tr class="odd">
 <td><span class="math inline">\(X\)</span></td>
 <td>Input token embeddings</td>
@@ -1008,14 +963,14 @@ flowchart BT
 <td><span class="math inline">\(d_{model} \times d_v\)</span></td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(Q, K\)</span></td>
-<td>Queries and Keys</td>
-<td><span class="math inline">\(N \times d_k\)</span></td>
+<td><span class="math inline">\(W^O\)</span></td>
+<td>Attention Output projection</td>
+<td><span class="math inline">\(d_{model} \times d_{model}\)</span></td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(V\)</span></td>
-<td>Values</td>
-<td><span class="math inline">\(N \times d_v\)</span></td>
+<td><span class="math inline">\(Q, K, V\)</span></td>
+<td>Queries, Keys &amp; Values</td>
+<td><span class="math inline">\(N \times d_k\)</span></td>
 </tr>
 <tr class="even">
 <td><span class="math inline">\(A\)</span></td>
@@ -1024,14 +979,14 @@ flowchart BT
 </tr>
 <tr class="odd">
 <td><span class="math inline">\(Z\)</span></td>
-<td>Output representations</td>
+<td>Output matrix</td>
 <td><span class="math inline">\(N \times d_v\)</span></td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="what-comes-next" class="level3" data-number="3.5.5">
-<h3 data-number="3.5.5" class="anchored" data-anchor-id="what-comes-next"><span class="header-section-number">3.5.5</span> What Comes Next</h3>
+<section id="what-comes-next" class="level3" data-number="3.5.4">
+<h3 data-number="3.5.4" class="anchored" data-anchor-id="what-comes-next"><span class="header-section-number">3.5.4</span> What Comes Next</h3>
 <p>We’ve built the complete Encoder Block. But we haven’t talked about:</p>
 <ul>
 <li><strong>How the model learns</strong> the weight matrices <span class="math inline">\(W^Q\)</span>, <span class="math inline">\(W^K\)</span>, <span class="math inline">\(W^V\)</span></li>
