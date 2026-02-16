@@ -318,8 +318,8 @@ window.Quarto = {
 <p><img src="images/horse.png" width="300"></p>
 <p>Before a Transformer can answer questions or write novels, text must be turned into numbers. To a computer, text is not meaning — it is just a sequence of bytes.</p>
 <p>Consider the word “horse.”</p>
-<p>The letters h-o-r-s-e do not inherently imply a hoofed mammal that run fast. In German, the same animal is “Pferd.” In Chinese, it is “馬.” The spellings are completely different, yet they refer to the same real-world creature — they are just <em>symbols</em> that represent the same concept.</p>
-<p>Artificial neural networks, the core components of AI models, operate on numbers but not symbols. So before a model can process language, we must convert text into numbers.</p>
+<p>The letters h-o-r-s-e do not inherently imply a hoofed mammal that runs fast. In German, the same animal is “Pferd.” In Chinese, it is “馬.” The spellings are completely different, yet they refer to the same real-world creature — they are just <em>symbols</em> that represent the same concept.</p>
+<p>Artificial neural networks, the core components of AI models, operate on numbers rather than not symbols. So before a model can process language, we must convert text into numbers.</p>
 <p><strong>What We Need</strong></p>
 <p>We need a systematic way to convert text into numerical vectors such that:</p>
 <ol type="1">
@@ -333,12 +333,56 @@ window.Quarto = {
 <p>Consider the input: <code>"the ring fell"</code></p>
 <section id="stage-1-the-breaking-of-the-text" class="level3" data-number="1.2.1">
 <h3 data-number="1.2.1" class="anchored" data-anchor-id="stage-1-the-breaking-of-the-text"><span class="header-section-number">1.2.1</span> Stage 1: The Breaking of the Text</h3>
-<p>First, we must break the text into smaller units called <strong>tokens</strong>. This is called <strong>tokenization</strong>.</p>
-<pre><code>Input:      "the ring fell"
-Tokens:     ["the", "ring", "fell"]
-               ↓      ↓       ↓
-Token IDs:  [ 101,   205,    310]</code></pre>
-<p>Each token maps to a unique integer ID via a static lookup table (the <em>vocabulary</em>).</p>
+<p>First, we must break the text into smaller units — <strong>tokens</strong> (For simplicity, think of it as individual words). Each token is then mapped to a unique integer ID via a static lookup table (the <em>vocabulary</em>).</p>
+<p>This process is called <strong>tokenization</strong>.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">---
+config:
+  themeVariables:
+    fontFamily: "monospace"
+  flowchart:
+    nodeSpacing: 8
+    rankSpacing: 25
+    padding: 10
+---
+flowchart BT
+    Input("Raw Text&lt;br&gt;'the ring fell'")
+    subgraph Tokenize[" Tokenization"]
+        direction BT
+        T1("the")
+        T2("ring")
+        T3("fell")
+        ID1("101")
+        ID2("205")
+        ID3("310")
+    end
+    Output("Token IDs&lt;br&gt;[101, 205, 310]")
+    
+    Input --&gt; Tokenize --&gt; Output
+    T1 -.-&gt; ID1
+    T2 -.-&gt; ID2
+    T3 -.-&gt; ID3    
+
+    %% Styles
+    style Input fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style Tokenize fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style T1 fill:#fff,stroke:#4a3b2c
+    style T2 fill:#fff,stroke:#4a3b2c
+    style T3 fill:#fff,stroke:#4a3b2c
+    style ID1 fill:#fff,stroke:#4a3b2c
+    style ID2 fill:#fff,stroke:#4a3b2c
+    style ID3 fill:#fff,stroke:#4a3b2c
+    style Output fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -423,74 +467,15 @@ Token IDs:  [ 101,   205,    310]</code></pre>
 <p>Instead, we convert each ID into a vector of numbers using an <strong>embedding matrix</strong>.</p>
 <section id="what-is-the-embedding-matrix" class="level4">
 <h4 class="anchored" data-anchor-id="what-is-the-embedding-matrix">What Is the Embedding Matrix?</h4>
-<p>Think of the embedding matrix as a <strong>dictionary</strong>, but instead of definitions, each entry contains a list of numbers:</p>
+<p>Think of the embedding matrix as a <strong>dictionary</strong>, but instead of definitions, each entry (i.e.&nbsp;each row) contains a list of numbers (an <strong>embedding vector</strong>), representing a token in the vocabulary:</p>
 <p><span class="math display">\[
 W_E \in \mathbb{R}^{|V| \times d_{model}}
 \]</span></p>
 <ul>
 <li><span class="math inline">\(|V|\)</span> = vocabulary size (number of entries in the dictionary)</li>
-<li><span class="math inline">\(d_{model}\)</span> = how many numbers describe each token</li>
+<li><span class="math inline">\(d_{model}\)</span> = numbers of dimensions used to describe each token</li>
+<li>We’ll use <span class="math inline">\(d_{model} = 4\)</span> throughout the book to keep examples consistent.</li>
 </ul>
-<p>Each row corresponds to one token in the vocabulary. To “look up” a token, we simply retrieve its row.</p>
-</section>
-<section id="what-do-these-numbers-represent" class="level4">
-<h4 class="anchored" data-anchor-id="what-do-these-numbers-represent">What Do These Numbers Represent?</h4>
-<p>Each number in a token’s vector captures some <strong>feature</strong> of that token’s identity. You can think of it like this: just as a person might be described along dimensions like <em>height</em>, <em>age</em>, <em>introversion</em>, a token is described along learned dimensions.</p>
-<p>The crucial distinction:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 66%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Concept</th>
-<th>What It Captures</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Identity</strong></td>
-<td><em>What</em> this token is, in isolation—its inherent properties as a vocabulary item</td>
-</tr>
-<tr class="even">
-<td><strong>Meaning</strong></td>
-<td><em>What</em> this token means <em>here</em>—which requires context</td>
-</tr>
-</tbody>
-</table>
-<p>The embedding matrix only gives us <strong>identity</strong>. The vector for “ring” encodes properties like:</p>
-<pre><code>common English word, 
-can function as noun or verb, 
-has certain phonetic properties, 
-frequently co-occurs with words like X, Y, Z...</code></pre>
-<p>But this vector doesn’t tell us whether “ring” means jewelry or sound in any particular sentence. That’s <strong>meaning</strong>, and meaning requires <strong>context</strong>, which we don’t have yet.</p>
-</section>
-<section id="are-features-human-interpretable" class="level4">
-<h4 class="anchored" data-anchor-id="are-features-human-interpretable">Are Features Human-Interpretable?</h4>
-<p>Not really. Unlike a dictionary definition you can read, these features are <strong>learned patterns</strong> that emerge from training on massive amounts of text. Dimension 47 might correlate with “noun-ness” and dimension 203 with “abstract vs.&nbsp;concrete,” but we can’t easily inspect them.</p>
-<p>What we <em>can</em> say: tokens with similar identities end up with similar vectors. “King” and “queen” will be closer together than “king” and “banana”—not because someone programmed royalty features, but because they appear in similar contexts during training.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Historical Note: Word2Vec and Static Embeddings
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>The idea of representing words as vectors predates Transformers. In 2013, <strong>Word2Vec</strong> demonstrated that you could learn embeddings where arithmetic worked: <em>vector(“king”) - vector(“man”) + vector(“woman”) ≈ vector(“queen”)</em>.</p>
-<p>These were revolutionary but <strong>static</strong>—each word had exactly one vector, regardless of context. The word “ring” would get a single embedding averaging across all its uses (jewelry, sound, boxing ring, tree ring…).</p>
-<p>Transformers start with similar static embeddings but then <strong>update them based on context</strong>—which is exactly what the next chapter will introduce.</p>
-</div>
-</div>
-</div>
-</section>
-<section id="toy-example-d_model-4" class="level4">
-<h4 class="anchored" data-anchor-id="toy-example-d_model-4">Toy Example (<span class="math inline">\(d_{model} = 4\)</span>)</h4>
 <p>For our sequence “the ring fell” (3 tokens), we look up 3 rows from <span class="math inline">\(W_E\)</span>:</p>
 <p><span class="math display">\[
 E = \begin{bmatrix}
@@ -504,18 +489,63 @@ E = \begin{bmatrix}
 \leftarrow \text{``fell" (ID: 310)}
 \end{matrix}
 \]</span></p>
-<p>Each row is a token’s <strong>identity vector</strong>—a numerical fingerprint that says <em>what</em> it is, but not yet <em>what it means here</em>.</p>
-<p>We’ll continue using <span class="math inline">\(d_{model} = 4\)</span> in the next chapter to keep examples consistent.</p>
+<p>Intuitively, each row represents a token’s unique <em>identity</em>—a numerical fingerprint that says <em>what</em> it is, but not yet <em>what it means here</em>.</p>
+</section>
+<section id="what-do-these-numbers-represent" class="level4">
+<h4 class="anchored" data-anchor-id="what-do-these-numbers-represent">What Do These Numbers Represent?</h4>
+<p>Each number in a token’s embedding vector describes the token along one <strong>dimension</strong> (a.k.a. <strong>feature</strong>). You can think of it like this: just as a person might be described (and thus identified) along multiple dimensions like <em>height</em>, <em>age</em>, <em>hair color</em>, a token is described along some learned dimensions.</p>
+<p><img src="images/person-vs-token.png" class="img-fluid"></p>
+<p>Note that the embedding matrix only helps us identify a token, but not understand it. For example, the vector for <code>ring</code> might encode properties like:</p>
+<pre><code>common English word, 
+can function as noun or verb, 
+has certain phonetic properties, 
+frequently co-occurs with words like X, Y, Z...</code></pre>
+<p>But this vector doesn’t tell us whether “ring” means jewelry or sound in any particular sentence: Meaning requires <strong>context</strong>, which we don’t have yet.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Are Embedding Features Human-Interpretable?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Not really. Unlike a dictionary definition you can read, these features are <strong>learned patterns</strong> that emerge from training on massive amounts of text. Dimension 47 might correlate with “noun-ness” and dimension 203 with “abstract vs.&nbsp;concrete,” but we can’t easily inspect them.</p>
+<p>What we <em>can</em> say: tokens with similar identities end up with similar vectors. “King” and “queen” will be closer together than “king” and “banana”—not because someone programmed royalty features, but because they appear in similar contexts during training.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Historical Note: Word2Vec and Static Embeddings
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The idea of representing words as vectors predates Transformers. In 2013, <strong>Word2Vec</strong> demonstrated that you could learn embeddings where arithmetic worked: <em>vector(“king”) - vector(“man”) + vector(“woman”) ≈ vector(“queen”)</em>.</p>
+<p>These were revolutionary but <strong>static</strong>—each word had exactly one vector, regardless of context. The word “ring” would get a single embedding averaging across all its uses (jewelry, sound, boxing ring, tree ring…).</p>
+<p>Transformers start with similar static embeddings but then <strong>update them based on context</strong>—which is exactly what the next chapter will introduce.</p>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="stage-3-positional-encoding" class="level3" data-number="1.2.3">
 <h3 data-number="1.2.3" class="anchored" data-anchor-id="stage-3-positional-encoding"><span class="header-section-number">1.2.3</span> Stage 3: Positional Encoding</h3>
-<p>If we input “Fell ring the” instead of “the ring fell,” the embedding matrix simply swaps rows. Because the Transformer processes all tokens simultaneously (<strong>permutation invariance</strong>), it cannot inherently distinguish “Dog bites man” from “Man bites dog.”</p>
+<p>If we input “fell ring the” instead of “the ring fell,” the embedding matrix simply swaps rows. Because the Transformer processes all tokens simultaneously (<strong>permutation invariance</strong>), it cannot inherently distinguish “dog bites man” from “man bites dog.”</p>
 <p><strong>The Solution:</strong> We inject position information by <strong>adding</strong> a position-specific vector (<span class="math inline">\(P\)</span>) to each token embedding (<span class="math inline">\(E\)</span>).</p>
 <p><span class="math display">\[X = E + P\]</span></p>
-<p>Now, the vector for “ring” depends on <strong>what</strong> it is and <strong>where</strong> it is.</p>
+<p>Now, each embedding in the ouput matrix, <span class="math inline">\(X\)</span>, captures <strong>what</strong> properties the token carries and <strong>where</strong> it is located. In the next chapter, we will see how transformers use this matrix to understand the text.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -524,7 +554,7 @@ E = \begin{bmatrix}
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Original Transformers used fixed sinusoidal functions:</p>
 <p><span class="math display">\[PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{model}}}\right)\]</span></p>
