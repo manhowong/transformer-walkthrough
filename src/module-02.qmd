@@ -227,7 +227,7 @@ The term "attention" is ubiquitous—use it when communicating with others. But 
 
 ## Summary
 
-### Key Shapes
+### Key Symbols
 
 | Symbol | Meaning | Shape |
 |--------|---------|-------|
