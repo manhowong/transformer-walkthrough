@@ -19,8 +19,7 @@ book:
   back-to-top-navigation: true
 
   chapters:
-    - index.qmd # unnumbered and unlisted by yml settings in the file 
-    - overview.qmd # unnumbered by {.unnumbered} next to title in the linked file
+    - index.qmd # unnumbered and unlisted (see the file)
     - part: "The One Mechanism"
       collapsed: false
       chapters:
