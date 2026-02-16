@@ -32,7 +32,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./overview.html" rel="next">
+<link href="./module-01.html" rel="next">
 <link href="./images/walk.png" rel="icon" type="image/png">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -94,7 +94,7 @@ h1.hide {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Preface</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Welcome</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -126,13 +126,7 @@ h1.hide {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Preface</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./overview.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Overview</span></a>
+ <span class="menu-text">Welcome</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -279,12 +273,35 @@ h1.hide {
 </header>
 
 
-<section id="preface" class="level1 hide unnumbered unlisted">
-<h1 class="hide unnumbered unlisted">Preface</h1>
+<section id="welcome" class="level1 hide unnumbered unlisted">
+<h1 class="hide unnumbered unlisted">Welcome</h1>
 <p><br></p>
 <p><img src="images/cover.png" width="200"></p>
+<section id="whats-special-about-this-book" class="level2">
+<h2 class="anchored" data-anchor-id="whats-special-about-this-book">What’s Special About This Book?</h2>
+<p>Honestly, nothing. It’s just another book on transformers—and there are many excellent ones out there.</p>
+<p>So why write another one? I’ve noticed that much of the confusion learners have about the core of transformers—the “attention” mechanism—traces back to the name itself.</p>
+<p>Most courses treat “attention” as more than just a name—they build analogies on top of it (e.g., a word “attends to” other words) and explain transformer models without a consistent level of abstraction (e.g., the subject of “attend” alternates between words and models; the “self” in self-attention refers to the input rather than a word. etc.). If you’re already feeling confused, this is why.</p>
+<p>In this book, I try to keep analogies minimal. I treat “attention” as just a name—nothing more—and explain things without complex analogies that complicate rather than clarify. Hopefully, this approach will work for some learners.</p>
+</section>
+<section id="what-is-this-book-about" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-this-book-about">What Is This Book About?</h2>
+<p>This book is still a work in progress. Here’s what I have planned:</p>
+<p><strong>Part 1: The One Mechanism</strong><br>
+How text becomes numbers (Chapter 1), how tokens exchange context through relevance-weighted averaging (Chapter 2), and the full mathematical walkthrough of attention (Chapter 3).</p>
+<p><strong>Part 2: The Twofold Training</strong><br>
+How these models acquire their capabilities. Pre-training on vast text corpora (Chapter 4) and fine-tuning for specific tasks (Chapter 5).</p>
+<p><strong>Part 3: The Three Wizards</strong><br>
+The major architectural families. Encoders (Chapter 6), decoders (Chapter 7), and everything in between (Chapter 8).</p>
+<p><strong>Part 4: The Appendices</strong><br>
+Practical matters. Computational considerations (Chapter 9), evaluation methods (Chapter 10), and modern methods (Chapter 11).</p>
+</section>
+<section id="prerequisites" class="level2">
+<h2 class="anchored" data-anchor-id="prerequisites">Prerequisites</h2>
+<p>You’ll benefit from having a basic grasp of ML concepts. Familiarity with neural networks, understanding that “training” is about adjusting parameters for improvement, and knowing that matrices are just collections of numbers will help. If you come across terms that puzzle you, like “softmax” or “gradient”, don’t hesitate to look them up.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -692,8 +709,8 @@ h1.hide {
   <div class="nav-page nav-page-previous">
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./overview.html" class="pagination-link" aria-label="Overview">
-        <span class="nav-page-text">Overview</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./module-01.html" class="pagination-link" aria-label="Text, Tokens, and Numbers">
+        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Text, Tokens, and Numbers</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

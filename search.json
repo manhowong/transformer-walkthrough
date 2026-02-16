@@ -4,39 +4,39 @@
     "href": "index.html",
     "title": "A Plain Walkthrough of Transformer Models",
     "section": "",
-    "text": "Preface",
+    "text": "Welcome",
     "crumbs": [
-      "Preface"
+      "Welcome"
     ]
   },
   {
-    "objectID": "overview.html",
-    "href": "overview.html",
-    "title": "Overview",
-    "section": "",
+    "objectID": "index.html#whats-special-about-this-book",
+    "href": "index.html#whats-special-about-this-book",
+    "title": "A Plain Walkthrough of Transformer Models",
+    "section": "What’s Special About This Book?",
     "text": "What’s Special About This Book?\nHonestly, nothing. It’s just another book on transformers—and there are many excellent ones out there.\nSo why write another one? I’ve noticed that much of the confusion learners have about the core of transformers—the “attention” mechanism—traces back to the name itself.\nMost courses treat “attention” as more than just a name—they build analogies on top of it (e.g., a word “attends to” other words) and explain transformer models without a consistent level of abstraction (e.g., the subject of “attend” alternates between words and models; the “self” in self-attention refers to the input rather than a word. etc.). If you’re already feeling confused, this is why.\nIn this book, I try to keep analogies minimal. I treat “attention” as just a name—nothing more—and explain things without complex analogies that complicate rather than clarify. Hopefully, this approach will work for some learners.",
     "crumbs": [
-      "Overview"
+      "Welcome"
     ]
   },
   {
-    "objectID": "overview.html#what-is-this-book-about",
-    "href": "overview.html#what-is-this-book-about",
-    "title": "Overview",
+    "objectID": "index.html#what-is-this-book-about",
+    "href": "index.html#what-is-this-book-about",
+    "title": "A Plain Walkthrough of Transformer Models",
     "section": "What Is This Book About?",
     "text": "What Is This Book About?\nThis book is still a work in progress. Here’s what I have planned:\nPart 1: The One Mechanism\nHow text becomes numbers (Chapter 1), how tokens exchange context through relevance-weighted averaging (Chapter 2), and the full mathematical walkthrough of attention (Chapter 3).\nPart 2: The Twofold Training\nHow these models acquire their capabilities. Pre-training on vast text corpora (Chapter 4) and fine-tuning for specific tasks (Chapter 5).\nPart 3: The Three Wizards\nThe major architectural families. Encoders (Chapter 6), decoders (Chapter 7), and everything in between (Chapter 8).\nPart 4: The Appendices\nPractical matters. Computational considerations (Chapter 9), evaluation methods (Chapter 10), and modern methods (Chapter 11).",
     "crumbs": [
-      "Overview"
+      "Welcome"
     ]
   },
   {
-    "objectID": "overview.html#prerequisites",
-    "href": "overview.html#prerequisites",
-    "title": "Overview",
+    "objectID": "index.html#prerequisites",
+    "href": "index.html#prerequisites",
+    "title": "A Plain Walkthrough of Transformer Models",
     "section": "Prerequisites",
     "text": "Prerequisites\nYou’ll benefit from having a basic grasp of ML concepts. Familiarity with neural networks, understanding that “training” is about adjusting parameters for improvement, and knowing that matrices are just collections of numbers will help. If you come across terms that puzzle you, like “softmax” or “gradient”, don’t hesitate to look them up.",
     "crumbs": [
-      "Overview"
+      "Welcome"
     ]
   },
   {
