@@ -463,7 +463,7 @@ flowchart BT
 </section>
 <section id="stage-2-embedding" class="level3" data-number="1.2.2">
 <h3 data-number="1.2.2" class="anchored" data-anchor-id="stage-2-embedding"><span class="header-section-number">1.2.2</span> Stage 2: Embedding</h3>
-<p>Having numerical tokens is not enough. An ID simply indexes a token in a vocabulary, but doesn’t carry information itself. Besides, we cannot feed token IDs (e.g., <code>[101, 205, 310]</code>) directly into a neural network because they imply false mathematical relationships (e.g., <code>310</code> &gt; <code>101</code> suggests <code>fell</code> is somehow “greater than” <code>the</code>).</p>
+<p>Having numerical tokens (IDs) is not enough. An ID simply indexes a token in a vocabulary, but doesn’t carry information itself. Besides, we cannot feed token IDs (e.g., <code>[101, 205, 310]</code>) directly into a neural network because they imply false mathematical relationships (e.g., <code>310</code> &gt; <code>101</code> suggests <code>fell</code> is somehow “greater than” <code>the</code>).</p>
 <p>Instead, we convert each ID into a vector of numbers using an <strong>embedding matrix</strong>.</p>
 <section id="what-is-the-embedding-matrix" class="level4">
 <h4 class="anchored" data-anchor-id="what-is-the-embedding-matrix">What Is the Embedding Matrix?</h4>
@@ -573,7 +573,7 @@ frequently co-occurs with words like X, Y, Z...</code></pre>
 <p></p><figure class="figure"><p></p>
 <div>
 <pre class="mermaid mermaid-js">---
-config: 
+config:
   themeVariables:
     fontFamily: "monospace"
   flowchart:
@@ -584,7 +584,7 @@ config:
 flowchart BT
     A("Raw Text&lt;br&gt;'the ring fell'")
     B[["Tokenization"]]
-    C("Token IDs&lt;br&gt;")
+    C("Tokens (IDs)&lt;br&gt;")
     D[["Embedding Lookup"]]
     E("Token Embeddings (E)&lt;br&gt;(3 × d&lt;sub&gt;model&lt;/sub&gt;)")
     F("Position IDs&lt;br&gt;")
@@ -594,8 +594,10 @@ flowchart BT
     J("Matrix X&lt;br&gt;(3 × d&lt;sub&gt;model&lt;/sub&gt;)")
 
     A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; I
+    C ~~~ Dummy[ ] ~~~ D 
     F --&gt; G --&gt; H --&gt; I
     I --&gt; J
+    C -..- F
     
     style A fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
     style J fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
@@ -609,6 +611,8 @@ flowchart BT
     style E fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style F fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style H fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    
+    style Dummy fill:transparent,stroke:transparent
 
 </pre>
 </div>
