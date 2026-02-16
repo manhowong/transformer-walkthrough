@@ -27,7 +27,7 @@ Consider the input: `"the ring fell"`
 
 ### Stage 1: The Breaking of the Text
 
-First, we must break the text into smaller units — **tokens** (For simplicity, think of it as individual words). Each token is then mapped to a unique integer ID via a static lookup table (the *vocabulary*).
+First, we must break the text into smaller units — **tokens** (For simplicity, think of it as individual words). Each token maps to a unique integer ID via a static lookup table (the *vocabulary*).
 
 This process is called **tokenization**.
 
@@ -114,7 +114,7 @@ Beyond words, models use special tokens to mark structure or unknown words:
 
 ### Stage 2: Embedding
 
-We cannot feed raw token IDs (e.g., `[101, 205, 310]`) directly into a neural network because they imply false mathematical relationships (e.g., 310 > 101 suggests "fell" is somehow "greater than" "the").
+Having numerical tokens is not enough. An ID simply indexes a token in a vocabulary, but doesn't carry information itself. Besides, we cannot feed token IDs (e.g., `[101, 205, 310]`) directly into a neural network because they imply false mathematical relationships (e.g., `310` > `101` suggests `fell` is somehow "greater than" `the`).
 
 Instead, we convert each ID into a vector of numbers using an **embedding matrix**.
 
@@ -153,7 +153,7 @@ Each number in a token's embedding vector describes the token along one **dimens
 
 ![](images/person-vs-token.png)
 
-Note that the embedding matrix only helps us identify a token, but not understand it. For example, the vector for `ring` might encode properties like:
+Note that an embedding only helps us identify a token, but not understand it. For example, the embedding for `ring` might encode properties like:
 
 ```
 common English word, 
