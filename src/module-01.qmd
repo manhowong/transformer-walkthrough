@@ -8,9 +8,9 @@ Before a Transformer can answer questions or write novels, text must be turned i
 
 Consider the word “horse.”
 
-The letters h-o-r-s-e do not inherently imply a hoofed mammal that run fast. In German, the same animal is “Pferd.” In Chinese, it is “馬.” The spellings are completely different, yet they refer to the same real-world creature — they are just *symbols* that represent the same concept.
+The letters h-o-r-s-e do not inherently imply a hoofed mammal that runs fast. In German, the same animal is “Pferd.” In Chinese, it is “馬.” The spellings are completely different, yet they refer to the same real-world creature — they are just *symbols* that represent the same concept.
 
-Artificial neural networks, the core components of AI models, operate on numbers but not symbols. So before a model can process language, we must convert text into numbers.
+Artificial neural networks, the core components of AI models, operate on numbers rather than not symbols. So before a model can process language, we must convert text into numbers.
 
 **What We Need**
 
@@ -27,16 +27,49 @@ Consider the input: `"the ring fell"`
 
 ### Stage 1: The Breaking of the Text
 
-First, we must break the text into smaller units called **tokens**. This is called **tokenization**.
+First, we must break the text into smaller units — **tokens** (For simplicity, think of it as individual words). Each token is then mapped to a unique integer ID via a static lookup table (the *vocabulary*).
 
-```
-Input:      "the ring fell"
-Tokens:     ["the", "ring", "fell"]
-               ↓      ↓       ↓
-Token IDs:  [ 101,   205,    310]
-```
+This process is called **tokenization**.
 
-Each token maps to a unique integer ID via a static lookup table (the *vocabulary*).
+```{mermaid}
+---
+config:
+  themeVariables:
+    fontFamily: "monospace"
+  flowchart:
+    nodeSpacing: 8
+    rankSpacing: 25
+    padding: 10
+---
+flowchart BT
+    Input("Raw Text<br>'the ring fell'")
+    subgraph Tokenize[" Tokenization"]
+        direction BT
+        T1("the")
+        T2("ring")
+        T3("fell")
+        ID1("101")
+        ID2("205")
+        ID3("310")
+    end
+    Output("Token IDs<br>[101, 205, 310]")
+    
+    Input --> Tokenize --> Output
+    T1 -.-> ID1
+    T2 -.-> ID2
+    T3 -.-> ID3    
+
+    %% Styles
+    style Input fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
+    style Tokenize fill:#fdf1b8,stroke:#9a832d,color:#4a3b2c
+    style T1 fill:#fff,stroke:#4a3b2c
+    style T2 fill:#fff,stroke:#4a3b2c
+    style T3 fill:#fff,stroke:#4a3b2c
+    style ID1 fill:#fff,stroke:#4a3b2c
+    style ID2 fill:#fff,stroke:#4a3b2c
+    style ID3 fill:#fff,stroke:#4a3b2c
+    style Output fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+```
 
 ::: {.callout-note collapse="true"}
 ## What is the "Vocabulary"?
@@ -87,61 +120,17 @@ Instead, we convert each ID into a vector of numbers using an **embedding matrix
 
 #### What Is the Embedding Matrix?
 
-Think of the embedding matrix as a **dictionary**, but instead of definitions, each entry contains a list of numbers:
-
+Think of the embedding matrix as a **dictionary**, but instead of definitions, each entry (i.e. each row) contains a list of numbers (an **embedding vector**), representing a token in the vocabulary:
 
 $$
 W_E \in \mathbb{R}^{|V| \times d_{model}}
 $$
 
-
 - $|V|$ = vocabulary size (number of entries in the dictionary)
-- $d_{model}$ = how many numbers describe each token
-
-Each row corresponds to one token in the vocabulary. To "look up" a token, we simply retrieve its row.
-
-#### What Do These Numbers Represent?
-
-Each number in a token's vector captures some **feature** of that token's identity. You can think of it like this: just as a person might be described along dimensions like *height*, *age*, *introversion*, a token is described along learned dimensions.
-
-The crucial distinction:
-
-| Concept | What It Captures |
-|---------|------------------|
-| **Identity** | *What* this token is, in isolation—its inherent properties as a vocabulary item |
-| **Meaning** | *What* this token means *here*—which requires context |
-
-The embedding matrix only gives us **identity**. The vector for "ring" encodes properties like:
-
-```
-common English word, 
-can function as noun or verb, 
-has certain phonetic properties, 
-frequently co-occurs with words like X, Y, Z...
-```
-
-But this vector doesn't tell us whether "ring" means jewelry or sound in any particular sentence. That's **meaning**, and meaning requires **context**, which we don't have yet.
-
-#### Are Features Human-Interpretable?
-
-Not really. Unlike a dictionary definition you can read, these features are **learned patterns** that emerge from training on massive amounts of text. Dimension 47 might correlate with "noun-ness" and dimension 203 with "abstract vs. concrete," but we can't easily inspect them.
-
-What we *can* say: tokens with similar identities end up with similar vectors. "King" and "queen" will be closer together than "king" and "banana"—not because someone programmed royalty features, but because they appear in similar contexts during training.
-
-::: {.callout-note collapse="true"}
-## Historical Note: Word2Vec and Static Embeddings
-
-The idea of representing words as vectors predates Transformers. In 2013, **Word2Vec** demonstrated that you could learn embeddings where arithmetic worked: *vector("king") - vector("man") + vector("woman") ≈ vector("queen")*.
-
-These were revolutionary but **static**—each word had exactly one vector, regardless of context. The word "ring" would get a single embedding averaging across all its uses (jewelry, sound, boxing ring, tree ring...).
-
-Transformers start with similar static embeddings but then **update them based on context**—which is exactly what the next chapter will introduce.
-:::
-
-#### Toy Example ($d_{model} = 4$)
+- $d_{model}$ = numbers of dimensions used to describe each token
+- We'll use $d_{model} = 4$ throughout the book to keep examples consistent.
 
 For our sequence "the ring fell" (3 tokens), we look up 3 rows from $W_E$:
-
 
 $$
 E = \begin{bmatrix}
@@ -156,21 +145,53 @@ E = \begin{bmatrix}
 \end{matrix}
 $$
 
+Intuitively, each row represents a token's unique *identity*—a numerical fingerprint that says *what* it is, but not yet *what it means here*.
 
-Each row is a token's **identity vector**—a numerical fingerprint that says *what* it is, but not yet *what it means here*.
+#### What Do These Numbers Represent?
 
-We'll continue using $d_{model} = 4$ in the next chapter to keep examples consistent.
+Each number in a token's embedding vector describes the token along one **dimension** (a.k.a. **feature**). You can think of it like this: just as a person might be described (and thus identified) along multiple dimensions like *height*, *age*, *hair color*, a token is described along some learned dimensions.
+
+![](images/person-vs-token.png)
+
+Note that the embedding matrix only helps us identify a token, but not understand it. For example, the vector for `ring` might encode properties like:
+
+```
+common English word, 
+can function as noun or verb, 
+has certain phonetic properties, 
+frequently co-occurs with words like X, Y, Z...
+```
+
+But this vector doesn't tell us whether "ring" means jewelry or sound in any particular sentence: Meaning requires **context**, which we don't have yet.
+
+::: {.callout-note collapse="true"}
+#### Are Embedding Features Human-Interpretable?
+
+Not really. Unlike a dictionary definition you can read, these features are **learned patterns** that emerge from training on massive amounts of text. Dimension 47 might correlate with "noun-ness" and dimension 203 with "abstract vs. concrete," but we can't easily inspect them.
+
+What we *can* say: tokens with similar identities end up with similar vectors. "King" and "queen" will be closer together than "king" and "banana"—not because someone programmed royalty features, but because they appear in similar contexts during training.
+:::
+
+::: {.callout-note collapse="true"}
+## Historical Note: Word2Vec and Static Embeddings
+
+The idea of representing words as vectors predates Transformers. In 2013, **Word2Vec** demonstrated that you could learn embeddings where arithmetic worked: *vector("king") - vector("man") + vector("woman") ≈ vector("queen")*.
+
+These were revolutionary but **static**—each word had exactly one vector, regardless of context. The word "ring" would get a single embedding averaging across all its uses (jewelry, sound, boxing ring, tree ring...).
+
+Transformers start with similar static embeddings but then **update them based on context**—which is exactly what the next chapter will introduce.
+:::
 
 ### Stage 3: Positional Encoding
 
-If we input "Fell ring the" instead of "the ring fell," the embedding matrix simply swaps rows. Because the Transformer processes all tokens simultaneously (**permutation invariance**), it cannot inherently distinguish "Dog bites man" from "Man bites dog."
+If we input "fell ring the" instead of "the ring fell," the embedding matrix simply swaps rows. Because the Transformer processes all tokens simultaneously (**permutation invariance**), it cannot inherently distinguish "dog bites man" from "man bites dog."
 
 **The Solution:**
 We inject position information by **adding** a position-specific vector ($P$) to each token embedding ($E$).
 
 $$X = E + P$$
 
-Now, the vector for "ring" depends on **what** it is and **where** it is.
+Now, each embedding in the ouput matrix, $X$, captures **what** properties the token carries and **where** it is located. In the next chapter, we will see how transformers use this matrix to understand the text.
 
 ::: {.callout-tip collapse="true"}
 ## Technical Detail: The Math of Position
