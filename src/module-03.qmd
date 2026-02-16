@@ -184,6 +184,10 @@ Here is a simplified computational graph showing how variables are connected.
 config:
   themeVariables:
     fontFamily: "monospace"
+  flowchart:
+    nodeSpacing: 35
+    rankSpacing: 30
+    padding: 10
 ---
 flowchart LR
     X("X")
@@ -211,7 +215,7 @@ flowchart LR
 
     Q --> S
     K --> KT --> S
-    S -->|"scale &<br>softmax"| A
+    S --->|"scale &<br>softmax"| A
     A --> Z
     V --> Z
 
