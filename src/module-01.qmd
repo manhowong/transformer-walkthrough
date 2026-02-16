@@ -114,7 +114,7 @@ Beyond words, models use special tokens to mark structure or unknown words:
 
 ### Stage 2: Embedding
 
-Having numerical tokens is not enough. An ID simply indexes a token in a vocabulary, but doesn't carry information itself. Besides, we cannot feed token IDs (e.g., `[101, 205, 310]`) directly into a neural network because they imply false mathematical relationships (e.g., `310` > `101` suggests `fell` is somehow "greater than" `the`).
+Having numerical tokens (IDs) is not enough. An ID simply indexes a token in a vocabulary, but doesn't carry information itself. Besides, we cannot feed token IDs (e.g., `[101, 205, 310]`) directly into a neural network because they imply false mathematical relationships (e.g., `310` > `101` suggests `fell` is somehow "greater than" `the`).
 
 Instead, we convert each ID into a vector of numbers using an **embedding matrix**.
 
@@ -211,7 +211,7 @@ We have converted text into a numerical matrix $X$ of shape $(N \times d_{model}
 
 ```{mermaid}
 ---
-config: 
+config:
   themeVariables:
     fontFamily: "monospace"
   flowchart:
@@ -222,7 +222,7 @@ config:
 flowchart BT
     A("Raw Text<br>'the ring fell'")
     B[["Tokenization"]]
-    C("Token IDs<br>")
+    C("Tokens (IDs)<br>")
     D[["Embedding Lookup"]]
     E("Token Embeddings (E)<br>(3 × d<sub>model</sub>)")
     F("Position IDs<br>")
@@ -232,8 +232,10 @@ flowchart BT
     J("Matrix X<br>(3 × d<sub>model</sub>)")
 
     A --> B --> C --> D --> E --> I
+    C ~~~ Dummy[ ] ~~~ D 
     F --> G --> H --> I
     I --> J
+    C -..- F
     
     style A fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
     style J fill:#d8e2dc,stroke:#5b7065,color:#2a3630,stroke-width:2px
@@ -247,6 +249,8 @@ flowchart BT
     style E fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style F fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
     style H fill:#e8dcc4,stroke:#4a3b2c,color:#4a3b2c
+    
+    style Dummy fill:transparent,stroke:transparent
 
 ```
 
